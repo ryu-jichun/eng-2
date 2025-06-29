@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>중학교 2학년 영어 단어 퀴즈</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 50%, #45b7d1 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+            animation: gradientShift 8s ease-in-out infinite;
+        }
+        
+        @keyframes gradientShift {
+            0%, 100% { background: linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 50%, #45b7d1 100%); }
+            50% { background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%); }
+        }
+        
+        .quiz-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 25px;
+            padding: 40px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+            backdrop-filter: blur(10px);
+        }
+        
+        .quiz-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .quiz-title {
+            font-size: 32px;
+            font-weight: bold;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 15px;
+        }
+        
+        .quiz-subtitle {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+        
+        .progress-container {
+            position: relative;
+            margin-bottom: 30px;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 12px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #4ecdc4);
+            width: 0%;
+            transition: width 0.5s ease;
+            border-radius: 6px;
+        }
+        
+        .question-number {
+            font-size: 14px;
+            color: #666;
+            margin-top: 10px;
+            text-align: center;
+        }
+        
+        .question-container {
+            margin-bottom: 40px;
+        }
+        
+        .question-text {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 30px;
+            line-height: 1.5;
+            text-align: center;
+            color: #2c3e50;
+        }
+        
+        .pronunciation-section {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 25px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 20px;
+            color: white;
+        }
+        
+        .word-display {
+            font-size: 36px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .pronunciation-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50px;
+            padding: 15px 30px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        .pronunciation-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: scale(1.05);
+        }
+        
+        .options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .option {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border: 3px solid transparent;
+            border-radius: 15px;
+            padding: 20px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            font-weight: 500;
+            position: relative;
+            overflow: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        .option::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transition: left 0.5s;
+        }
+        
+        .option:hover::before {
+            left: 100%;
+        }
+        
+        .option:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .option.selected {
+            background: linear-gradient(135deg, #ff6b6b, #ff8e53);
+            color: white;
+            border-color: #ff6b6b;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(255, 107, 107, 0.3);
+        }
+        
+        .option.correct {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border-color: #10b981;
+            animation: correctPulse 0.6s ease;
+        }
+        
+        .option.incorrect {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            border-color: #ef4444;
+            animation: incorrectShake 0.6s ease;
+        }
+        
+        @keyframes correctPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        @keyframes incorrectShake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        
+        .submit-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            padding: 18px;
+            font-size: 20px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(102, 126, 234, 0.4);
+        }
+        
+        .submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .result-container {
+            text-align: center;
+            display: none;
+            animation: fadeInUp 0.6s ease;
+        }
+        
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .result-score {
+            font-size: 56px;
+            font-weight: bold;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 25px;
+        }
+        
+        .result-message {
+            font-size: 22px;
+            margin-bottom: 35px;
+            line-height: 1.6;
+            color: #2c3e50;
+        }
+        
+        .restart-btn {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            padding: 18px 40px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        .restart-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(16, 185, 129, 0.4);
+        }
+        
+        .feedback {
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 15px;
+            font-weight: 500;
+            font-size: 16px;
+            display: none;
+            animation: slideIn 0.4s ease;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .feedback.correct {
+            background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+            color: #065f46;
+            border: 2px solid #10b981;
+        }
+        
+        .feedback.incorrect {
+            background: linear-gradient(135deg, #fee2e2, #fca5a5);
+            color: #991b1b;
+            border: 2px solid #ef4444;
+        }
+        
+        @media (max-width: 768px) {
+            .quiz-container {
+                padding: 25px;
+                margin: 10px;
+            }
+            
+            .options {
+                grid-template-columns: 1fr;
+            }
+            
+            .quiz-title {
+                font-size: 28px;
+            }
+            
+            .word-display {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <div class="quiz-header">
+            <h1 class="quiz-title">🌟 영어 단어 퀴즈</h1>
+            <p class="quiz-subtitle">단어를 들어보고 뜻을 맞춰보세요!</p>
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="question-number" id="questionNumber">질문 1 / 10</div>
+            </div>
+        </div>
+        
+        <div class="question-container" id="questionContainer">
+            <div class="question-text" id="questionText">다음 영어 단어의 뜻은 무엇일까요?</div>
+            
+            <div class="pronunciation-section">
+                <div class="word-display" id="wordDisplay">Beautiful</div>
+                <button class="pronunciation-btn" id="pronunciationBtn" onclick="pronounceWord()">
+                    🔊 발음 듣기
+                </button>
+            </div>
+            
+            <div class="options" id="optionsContainer"></div>
+            <div class="feedback" id="feedback"></div>
+            <button class="submit-btn" id="submitBtn" onclick="submitAnswer()">정답 확인</button>
+        </div>
+        
+        <div class="result-container" id="resultContainer">
+            <div class="result-score" id="resultScore"></div>
+            <div class="result-message" id="resultMessage"></div>
+            <button class="restart-btn" onclick="restartQuiz()">다시 시작</button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                word: "Beautiful",
+                pronunciation: "Beautiful",
+                options: ["아름다운", "추한", "크고", "작은"],
+                correct: 0
+            },
+            {
+                word: "Kitchen",
+                pronunciation: "Kitchen",
+                options: ["침실", "거실", "부엌", "화장실"],
+                correct: 2
+            },
+            {
+                word: "Student",
+                pronunciation: "Student",
+                options: ["선생님", "학생", "의사", "간호사"],
+                correct: 1
+            },
+            {
+                word: "Happy",
+                pronunciation: "Happy",
+                options: ["슬픈", "화난", "행복한", "무서운"],
+                correct: 2
+            },
+            {
+                word: "Computer",
+                pronunciation: "Computer",
+                options: ["텔레비전", "컴퓨터", "냉장고", "세탁기"],
+                correct: 1
+            },
+            {
+                word: "Friend",
+                pronunciation: "Friend",
+                options: ["적", "친구", "가족", "이웃"],
+                correct: 1
+            },
+            {
+                word: "Music",
+                pronunciation: "Music",
+                options: ["그림", "음악", "책", "영화"],
+                correct: 1
+            },
+            {
+                word: "Delicious",
+                pronunciation: "Delicious",
+                options: ["맛있는", "맛없는", "뜨거운", "차가운"],
+                correct: 0
+            },
+            {
+                word: "Important",
+                pronunciation: "Important",
+                options: ["쉬운", "어려운", "중요한", "재미없는"],
+                correct: 2
+            },
+            {
+                word: "Exciting",
+                pronunciation: "Exciting",
+                options: ["지루한", "신나는", "조용한", "시끄러운"],
+                correct: 1
+            }
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+        let selectedAnswer = -1;
+        let answered = false;
+
+        function loadQuestion() {
+            const question = questions[currentQuestion];
+            
+            document.getElementById('questionNumber').textContent = `질문 ${currentQuestion + 1} / ${questions.length}`;
+            document.getElementById('wordDisplay').textContent = question.word;
+            
+            const optionsContainer = document.getElementById('optionsContainer');
+            optionsContainer.innerHTML = '';
+            
+            question.options.forEach((option, index) => {
+                const optionDiv = document.createElement('div');
+                optionDiv.className = 'option';
+                optionDiv.textContent = option;
+                optionDiv.onclick = () => selectOption(index);
+                optionsContainer.appendChild(optionDiv);
+            });
+            
+            document.getElementById('submitBtn').disabled = true;
+            document.getElementById('feedback').style.display = 'none';
+            selectedAnswer = -1;
+            answered = false;
+            
+            // Update progress bar
+            const progress = ((currentQuestion) / questions.length) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+            
+            // Auto-pronounce the word when question loads
+            setTimeout(() => {
+                pronounceWord();
+            }, 500);
+        }
+
+        function selectOption(index) {
+            if (answered) return;
+            
+            selectedAnswer = index;
+            const options = document.querySelectorAll('.option');
+            options.forEach((option, i) => {
+                option.classList.remove('selected');
+                if (i === index) {
+                    option.classList.add('selected');
+                }
+            });
+            
+            document.getElementById('submitBtn').disabled = false;
+        }
+
+        function submitAnswer() {
+            if (selectedAnswer === -1 || answered) return;
+            
+            answered = true;
+            const question = questions[currentQuestion];
+            const options = document.querySelectorAll('.option');
+            const feedback = document.getElementById('feedback');
+            
+            options.forEach((option, index) => {
+                if (index === question.correct) {
+                    option.classList.add('correct');
+                } else if (index === selectedAnswer && index !== question.correct) {
+                    option.classList.add('incorrect');
+                }
+            });
+            
+            if (selectedAnswer === question.correct) {
+                score++;
+                feedback.textContent = `정답입니다! 🎉 "${question.word}"는 "${question.options[question.correct]}" 라는 뜻이에요!`;
+                feedback.className = 'feedback correct';
+            } else {
+                feedback.textContent = `틀렸습니다. "${question.word}"는 "${question.options[question.correct]}" 라는 뜻이에요.`;
+                feedback.className = 'feedback incorrect';
+            }
+            
+            feedback.style.display = 'block';
+            
+            document.getElementById('submitBtn').textContent = currentQuestion === questions.length - 1 ? '결과 보기' : '다음 문제';
+            document.getElementById('submitBtn').onclick = nextQuestion;
+        }
+
+        function nextQuestion() {
+            currentQuestion++;
+            
+            if (currentQuestion >= questions.length) {
+                showResults();
+            } else {
+                document.getElementById('submitBtn').textContent = '정답 확인';
+                document.getElementById('submitBtn').onclick = submitAnswer;
+                loadQuestion();
+            }
+        }
+
+        function showResults() {
+            document.getElementById('questionContainer').style.display = 'none';
+            document.getElementById('resultContainer').style.display = 'block';
+            
+            const percentage = Math.round((score / questions.length) * 100);
+            document.getElementById('resultScore').textContent = `${score}/${questions.length} (${percentage}%)`;
+            
+            let message = '';
+            if (percentage >= 90) {
+                message = '🏆 완벽해요! 영어 단어 실력이 정말 뛰어나요!';
+            } else if (percentage >= 70) {
+                message = '👏 잘했어요! 영어 공부를 열심히 하고 있네요!';
+            } else if (percentage >= 50) {
+                message = '📚 괜찮아요! 조금만 더 노력하면 완벽할 거예요!';
+            } else {
+                message = '💪 다시 도전해보세요! 단어를 더 많이 외워봐요!';
+            }
+            
+            document.getElementById('resultMessage').textContent = message;
+            
+            // Update progress bar to 100%
+            document.getElementById('progressFill').style.width = '100%';
+        }
+
+        function restartQuiz() {
+            currentQuestion = 0;
+            score = 0;
+            selectedAnswer = -1;
+            answered = false;
+            
+            document.getElementById('questionContainer').style.display = 'block';
+            document.getElementById('resultContainer').style.display = 'none';
+            
+            loadQuestion();
+        }
+
+        function pronounceWord() {
+            if ('speechSynthesis' in window) {
+                // Stop any ongoing speech
+                window.speechSynthesis.cancel();
+                
+                const question = questions[currentQuestion];
+                const utterance = new SpeechSynthesisUtterance(question.pronunciation);
+                
+                // Try to find a female English voice
+                const voices = window.speechSynthesis.getVoices();
+                const femaleEnglishVoice = voices.find(voice => 
+                    voice.lang.includes('en') && 
+                    (voice.name.toLowerCase().includes('female') || 
+                     voice.name.toLowerCase().includes('woman') ||
+                     voice.name.toLowerCase().includes('samantha') ||
+                     voice.name.toLowerCase().includes('karen') ||
+                     voice.name.toLowerCase().includes('susan'))
+                ) || voices.find(voice => voice.lang.includes('en-US')) 
+                  || voices.find(voice => voice.lang.includes('en'));
+                
+                if (femaleEnglishVoice) {
+                    utterance.voice = femaleEnglishVoice;
+                }
+                
+                utterance.lang = 'en-US';
+                utterance.rate = 0.8; // Slower for learning
+                utterance.pitch = 1.3; // Higher pitch for female voice
+                utterance.volume = 0.9;
+                
+                window.speechSynthesis.speak(utterance);
+            } else {
+                alert('죄송합니다. 이 브라우저는 음성 기능을 지원하지 않습니다.');
+            }
+        }
+
+        // Load voices when available
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.onvoiceschanged = function() {
+                // Voices are loaded
+            };
+        }
+
+        // Initialize quiz
+        loadQuestion();
+    </script>
+</body>
+</html>
